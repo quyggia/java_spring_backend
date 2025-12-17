@@ -2,6 +2,7 @@ package com.nnq.ketnoidatabase.configuration;
 
 
 import com.nnq.ketnoidatabase.enums.Role;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,8 +30,11 @@ public class SecurityConfig {
     public final String[] PUBLIC_ENOPOINTS = {
             "/users", "/auth/login", "/auth/introspect", "/auth/logout"
     };
-    @Value("${jwt.signerKey}")
-    private String signerKey;
+
+
+    @Autowired
+    private CustomJwtDecoded customJwtDecoded;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -43,7 +47,7 @@ public class SecurityConfig {
 
         httpSecurity.oauth2ResourceServer(oauth2 ->//bảo vệ tài nguyên bằng cách xác thực token
                 oauth2.jwt(jwtConfigurer ->
-                        jwtConfigurer.decoder(jwtDecoder())
+                        jwtConfigurer.decoder(customJwtDecoded)
                                     .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));//Khi request không nhận được token hoợp lệ hoawjc không có
         //token thì security sẽ gọi đến JwtAuthenticationEntryPoint để trả về lỗi cho clie
@@ -60,19 +64,15 @@ public class SecurityConfig {
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
     }
-    @Bean
-    JwtDecoder jwtDecoder() {
-
-        SecretKeySpec scKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
-        return NimbusJwtDecoder
-                .withSecretKey(scKeySpec)// nói với decode là cái token phải được ký bằng secret key này
-                .macAlgorithm(MacAlgorithm.HS512)//nói với decode là token phải được ký ằng thuật toán này
-                .build();
-        //Nếu không sẽ nén ra lỗi exception
-
-    }
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
-    }
+//    @Bean
+//    JwtDecoder jwtDecoder() {
+//
+//        SecretKeySpec scKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
+//        return NimbusJwtDecoder
+//                .withSecretKey(scKeySpec)// nói với decode là cái token phải được ký bằng secret key này
+//                .macAlgorithm(MacAlgorithm.HS512)//nói với decode là token phải được ký ằng thuật toán này
+//                .build();
+//        //Nếu không sẽ nén ra lỗi exception
+//
+//    }
 }
