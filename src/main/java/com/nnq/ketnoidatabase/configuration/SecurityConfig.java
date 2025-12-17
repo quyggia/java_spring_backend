@@ -27,7 +27,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class SecurityConfig {
 
     public final String[] PUBLIC_ENOPOINTS = {
-            "/users", "/auth/login", "/auth/introspect"
+            "/users", "/auth/login", "/auth/introspect", "/auth/logout"
     };
     @Value("${jwt.signerKey}")
     private String signerKey;

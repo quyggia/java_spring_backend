@@ -9,7 +9,9 @@ import lombok.Data;
 
 @Builder
 public class ApiRespon<T> {
-    private int code=1000;
+    @Builder.Default
+    private int code = 1000;
+
     private String message;
     private T result;
 

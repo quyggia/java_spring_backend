@@ -8,11 +8,14 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nnq.ketnoidatabase.dto.request.AuthenticationRequest;
 import com.nnq.ketnoidatabase.dto.request.IntrospectRequest;
+import com.nnq.ketnoidatabase.dto.request.LogoutRequest;
 import com.nnq.ketnoidatabase.dto.response.AuthenticationResponse;
 import com.nnq.ketnoidatabase.dto.response.IntrospectResponse;
+import com.nnq.ketnoidatabase.entity.InvalidatedToken;
 import com.nnq.ketnoidatabase.entity.User;
 import com.nnq.ketnoidatabase.exception.AppException;
 import com.nnq.ketnoidatabase.exception.ErrorCode;
+import com.nnq.ketnoidatabase.repository.InvalidatedTokenRepository;
 import com.nnq.ketnoidatabase.repository.UserRepository;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -35,6 +39,7 @@ import java.util.StringJoiner;
 public class AuthenticationService {
     UserRepository userRepository;
 
+    InvalidatedTokenRepository invalidatedTokenRepository;
     PasswordEncoder passwordEncoder;
     public static final String SINGER_KEY =
             "vcKsbEnYEQXsnPhertudBG+FySlYEkJ+zdYXPfD5c9Oc6qqDu3TkpJmrgryM6cI5";
@@ -57,18 +62,49 @@ public class AuthenticationService {
     }
     public IntrospectResponse introspectResponse(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
+        boolean isValid = true;
+        try {
+            verifyToken(token);
+        }catch (AppException e){
+            isValid = false;
+        }
+        return IntrospectResponse.builder()
+                .valid(isValid)
+                .build();
 
+    }
+
+
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(request.getToken());
+
+        String jti = signedJWT.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .Id(jti)
+                .expiryTime(expiryTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(SINGER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expityTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        boolean verifiered = signedJWT.verify(verifier);
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        var verified = signedJWT.verify(verifier);
 
-        return IntrospectResponse.builder()
-                .valid(verifiered && expityTime.after(new Date()))
-                .build();
+        if(!(verified && expiryTime.after(new Date())))
+            throw  new AppException(ErrorCode.AUTHENTICATED);
 
+        if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet()
+                .getJWTID()))
+            throw new AppException(ErrorCode.AUTHENTICATED);
+
+        return signedJWT;
     }
     public String generateToken(User user) throws JOSEException {
 
@@ -81,6 +117,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
+                .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
 
