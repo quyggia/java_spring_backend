@@ -4,6 +4,7 @@ package com.nnq.ketnoidatabase.controler;
 import com.nimbusds.jose.JOSEException;
 import com.nnq.ketnoidatabase.dto.request.IntrospectRequest;
 import com.nnq.ketnoidatabase.dto.request.LogoutRequest;
+import com.nnq.ketnoidatabase.dto.request.RefreshTokenRequest;
 import com.nnq.ketnoidatabase.dto.response.ApiRespon;
 import com.nnq.ketnoidatabase.dto.request.AuthenticationRequest;
 import com.nnq.ketnoidatabase.dto.response.AuthenticationResponse;
@@ -53,6 +54,13 @@ public class AuthenticationControler {
                 .build();
     }
 
+    @PostMapping("/refresh")
+    ApiRespon<AuthenticationResponse> introspect(@RequestBody RefreshTokenRequest request) throws JOSEException, ParseException {
+        var result = authenticationService.refreshToken(request);
+        return ApiRespon.<AuthenticationResponse>builder()
+                .result(result)
+                .build();
+    }
     @PostMapping("/logout")
     ApiRespon<Void> logout(@RequestBody LogoutRequest request) throws JOSEException, ParseException {
         authenticationService.logout(request);

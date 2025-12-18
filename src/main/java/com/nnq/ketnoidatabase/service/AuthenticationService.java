@@ -9,6 +9,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.nnq.ketnoidatabase.dto.request.AuthenticationRequest;
 import com.nnq.ketnoidatabase.dto.request.IntrospectRequest;
 import com.nnq.ketnoidatabase.dto.request.LogoutRequest;
+import com.nnq.ketnoidatabase.dto.request.RefreshTokenRequest;
 import com.nnq.ketnoidatabase.dto.response.AuthenticationResponse;
 import com.nnq.ketnoidatabase.dto.response.IntrospectResponse;
 import com.nnq.ketnoidatabase.entity.InvalidatedToken;
@@ -29,6 +30,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.UUID;
 
@@ -87,6 +89,31 @@ public class AuthenticationService {
                 .build();
 
         invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(request.getToken());
+
+        var jti = signedJWT.getJWTClaimsSet().getJWTID();
+        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .Id(jti)
+                .expiryTime(expiryTime)
+                .build();
+        invalidatedTokenRepository.save(invalidatedToken);
+
+        var username = signedJWT.getJWTClaimsSet().getSubject();
+
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOEXISTED));
+
+        var token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
     }
 
     private SignedJWT verifyToken(String token) throws JOSEException, ParseException {

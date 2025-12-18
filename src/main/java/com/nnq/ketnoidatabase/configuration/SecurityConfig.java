@@ -28,7 +28,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class SecurityConfig {
 
     public final String[] PUBLIC_ENOPOINTS = {
-            "/users", "/auth/login", "/auth/introspect", "/auth/logout"
+            "/users", "/auth/login", "/auth/introspect", "/auth/logout", "/auth/refresh"
     };
 
 
