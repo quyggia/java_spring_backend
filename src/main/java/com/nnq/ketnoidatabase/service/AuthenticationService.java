@@ -20,7 +20,9 @@ import com.nnq.ketnoidatabase.repository.InvalidatedTokenRepository;
 import com.nnq.ketnoidatabase.repository.UserRepository;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,17 @@ public class AuthenticationService {
     PasswordEncoder passwordEncoder;
     public static final String SINGER_KEY =
             "vcKsbEnYEQXsnPhertudBG+FySlYEkJ+zdYXPfD5c9Oc6qqDu3TkpJmrgryM6cI5";
+
+
+    @NonFinal
+    @Value("${jwt.valid-duration}")
+    protected long VALID_DURATION;
+
+
+    @NonFinal
+    @Value("${jwt.refresh-duration}")
+    protected long REFRESH_DURATION;
+
     public AuthenticationResponse authenticated(AuthenticationRequest request) throws JOSEException {
         var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOEXISTED));
@@ -66,7 +79,7 @@ public class AuthenticationService {
         var token = request.getToken();
         boolean isValid = true;
         try {
-            verifyToken(token);
+            verifyToken(token, false);
         }catch (AppException e){
             isValid = false;
         }
@@ -78,21 +91,28 @@ public class AuthenticationService {
 
 
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getToken());
 
-        String jti = signedJWT.getJWTClaimsSet().getJWTID();
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        try {
+            var signedJWT = verifyToken(request.getToken(), true);
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .Id(jti)
-                .expiryTime(expiryTime)
-                .build();
+            String jti = signedJWT.getJWTClaimsSet().getJWTID();
+            Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        invalidatedTokenRepository.save(invalidatedToken);
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .Id(jti)
+                    .expiryTime(expiryTime)
+                    .build();
+
+            invalidatedTokenRepository.save(invalidatedToken);
+
+        }catch (AppException exception){
+            log.info("Token already expired",exception);
+        }
+
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getToken());
+        var signedJWT = verifyToken(request.getToken(), true);
 
         var jti = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
@@ -116,12 +136,14 @@ public class AuthenticationService {
                 .build();
     }
 
-    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(SINGER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expiryTime = (isRefresh) ?
+                new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(REFRESH_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+                : signedJWT.getJWTClaimsSet().getExpirationTime();
         var verified = signedJWT.verify(verifier);
 
         if(!(verified && expiryTime.after(new Date())))
@@ -142,7 +164,7 @@ public class AuthenticationService {
                 .issuer("ketnoidatabase.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
