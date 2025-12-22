@@ -1,10 +1,9 @@
-package com.nnq.ketnoidatabase.controler;
+package com.nnq.ketnoidatabase.controller;
 
 
 import com.nnq.ketnoidatabase.dto.request.RoleCreationRequest;
 import com.nnq.ketnoidatabase.dto.response.ApiRespon;
 import com.nnq.ketnoidatabase.dto.response.RoleResponse;
-import com.nnq.ketnoidatabase.entity.Role;
 import com.nnq.ketnoidatabase.service.RoleService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

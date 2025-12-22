@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -38,12 +39,13 @@ public class CustomJwtDecoded implements JwtDecoder {
                     .build());
 
             if(!res.isValid())
-                throw new JwtException("Invalid token");
+                throw new org.springframework.security.oauth2.server.resource.InvalidBearerTokenException("Invalid token");
 
 
-        } catch (JOSEException | ParseException e){
-            throw  new  JwtException(e.getMessage());
+        } catch (JOSEException | ParseException e) {
+            throw new InvalidBearerTokenException(e.getMessage());
         }
+
 
         if(Objects.isNull(nimbusJwtDecoder)){
             SecretKeySpec scKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");

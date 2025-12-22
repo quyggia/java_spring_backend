@@ -1,4 +1,4 @@
-package com.nnq.ketnoidatabase.controler;
+package com.nnq.ketnoidatabase.controller;
 
 
 import com.nnq.ketnoidatabase.dto.request.PermissionCreationRequest;

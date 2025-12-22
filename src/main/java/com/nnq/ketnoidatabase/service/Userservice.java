@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,9 +46,15 @@ public class Userservice {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        HashSet<String> roles = new HashSet<>();// taoj ra 1 lisst khong trung nhau kieu string
-        roles.add(Role.USER.name());
-        //user.setRoles(roles);
+        com.nnq.ketnoidatabase.entity.Role userRole =
+                roleRepository
+                        .findById(com.nnq.ketnoidatabase.enums.Role.USER.name())
+                        .orElseThrow(() -> new RuntimeException("Role USER not found"));
+
+        Set<com.nnq.ketnoidatabase.entity.Role> roles = new HashSet<>();
+        roles.add(userRole);
+
+        user.setRoles(roles);
 
         return userRepository.save(user);
     }

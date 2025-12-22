@@ -1,10 +1,11 @@
-package com.nnq.ketnoidatabase.controler;
+package com.nnq.ketnoidatabase.controller;
 
 import com.nnq.ketnoidatabase.dto.response.ApiRespon;
 import com.nnq.ketnoidatabase.dto.request.UserCreationRequest;
 import com.nnq.ketnoidatabase.dto.request.UserUpdateRequest;
 import com.nnq.ketnoidatabase.dto.response.UserResponse;
 import com.nnq.ketnoidatabase.entity.User;
+import com.nnq.ketnoidatabase.mapper.UserMapper;
 import com.nnq.ketnoidatabase.service.Userservice;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -25,11 +26,18 @@ public class UserControler {
 
     Userservice userservice;
 
-    @PostMapping
-    ApiRespon<User> createUser(@RequestBody @Valid UserCreationRequest request) {
+    UserMapper userMapper;
 
-        ApiRespon<User> apiRespon = new ApiRespon<>();
-        apiRespon.setResult(userservice.createUser(request));
+    @PostMapping
+    ApiRespon<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
+
+        User user = userservice.createUser(request);
+        UserResponse userResponse = userMapper.toUserResponse(user);
+
+
+        ApiRespon<UserResponse> apiRespon = new ApiRespon<>();
+        apiRespon.setResult(userResponse);
+        apiRespon.setCode(1000);
         return apiRespon;
     }
     @GetMapping
