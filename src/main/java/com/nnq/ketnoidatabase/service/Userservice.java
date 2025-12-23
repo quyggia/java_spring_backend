@@ -91,7 +91,7 @@ public class Userservice {
         //List<User> → Stream<User> → UserResponse → List<UserResponse>
     }
 
-    @PostAuthorize("returnObject.username == authentication.name")
+    @PostAuthorize("returnObject.username == authentication.name") // Chỉ cho phép xem chính mình (admin != nnq01)
     public UserResponse getUser(String id) {
         log.info("Đã vào được methor getuser by id");
         return userMapper.toUserResponse(userRepository.findById(id)

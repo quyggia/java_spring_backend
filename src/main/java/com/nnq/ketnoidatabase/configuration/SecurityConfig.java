@@ -25,6 +25,7 @@ import javax.crypto.spec.SecretKeySpec;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+
 public class SecurityConfig {
 
     public final String[] PUBLIC_ENOPOINTS = {
