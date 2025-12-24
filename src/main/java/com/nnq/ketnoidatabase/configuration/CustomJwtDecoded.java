@@ -1,9 +1,9 @@
 package com.nnq.ketnoidatabase.configuration;
 
+import java.text.ParseException;
+import java.util.Objects;
+import javax.crypto.spec.SecretKeySpec;
 
-import com.nimbusds.jose.JOSEException;
-import com.nnq.ketnoidatabase.dto.request.IntrospectRequest;
-import com.nnq.ketnoidatabase.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -14,16 +14,14 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.text.ParseException;
-import java.util.Objects;
+import com.nimbusds.jose.JOSEException;
+import com.nnq.ketnoidatabase.dto.request.IntrospectRequest;
+import com.nnq.ketnoidatabase.service.AuthenticationService;
 
 @Component
 public class CustomJwtDecoded implements JwtDecoder {
     @Value("${jwt.signerKey}")
     private String signerKey;
-
-
 
     @Autowired
     private AuthenticationService authenticationService;
@@ -34,24 +32,22 @@ public class CustomJwtDecoded implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
 
         try {
-            var res = authenticationService.introspectResponse(IntrospectRequest.builder()
-                            .token(token)
-                    .build());
+            var res = authenticationService.introspectResponse(
+                    IntrospectRequest.builder().token(token).build());
 
-            if(!res.isValid())
-                throw new org.springframework.security.oauth2.server.resource.InvalidBearerTokenException("Invalid token");
-
+            if (!res.isValid())
+                throw new org.springframework.security.oauth2.server.resource.InvalidBearerTokenException(
+                        "Invalid token");
 
         } catch (JOSEException | ParseException e) {
             throw new InvalidBearerTokenException(e.getMessage());
         }
 
-
-        if(Objects.isNull(nimbusJwtDecoder)){
+        if (Objects.isNull(nimbusJwtDecoder)) {
             SecretKeySpec scKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
-            nimbusJwtDecoder = NimbusJwtDecoder
-                    .withSecretKey(scKeySpec)// nói với decode là cái token phải được ký bằng secret key này
-                    .macAlgorithm(MacAlgorithm.HS512)//nói với decode là token phải được ký ằng thuật toán này
+            nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(
+                            scKeySpec) // nói với decode là cái token phải được ký bằng secret key này
+                    .macAlgorithm(MacAlgorithm.HS512) // nói với decode là token phải được ký ằng thuật toán này
                     .build();
         }
         System.out.println(nimbusJwtDecoder);

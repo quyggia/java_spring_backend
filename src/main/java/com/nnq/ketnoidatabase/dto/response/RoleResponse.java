@@ -1,11 +1,11 @@
 package com.nnq.ketnoidatabase.dto.response;
 
+import java.util.Set;
 
 import com.nnq.ketnoidatabase.entity.Permission;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.Set;
 
 @Data
 @AllArgsConstructor

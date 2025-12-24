@@ -1,6 +1,5 @@
 package com.nnq.ketnoidatabase.dto.response;
 
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

@@ -1,12 +1,11 @@
 package com.nnq.ketnoidatabase.entity;
 
+import java.util.Set;
 
 import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-
-import java.util.Set;
 
 @Getter
 @Setter

@@ -1,12 +1,10 @@
 package com.nnq.ketnoidatabase.dto.response;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Builder;
-import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-
 @Builder
 public class ApiRespon<T> {
     @Builder.Default
@@ -19,8 +17,7 @@ public class ApiRespon<T> {
         return code;
     }
 
-    public ApiRespon() {
-    }
+    public ApiRespon() {}
 
     public ApiRespon(int code, String message, T result) {
         this.code = code;

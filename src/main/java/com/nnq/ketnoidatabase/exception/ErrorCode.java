@@ -1,8 +1,9 @@
 package com.nnq.ketnoidatabase.exception;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+
+import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
@@ -14,16 +15,13 @@ public enum ErrorCode {
     PASSWORD_SIZE(1005, "Lỗi đầu vào của mật khẩu phải đủ 5 ký tự", HttpStatus.BAD_REQUEST),
     AUTHENTICATED(1006, "Đăng nhập không thành công, sai mật khẩu.", HttpStatus.UNAUTHORIZED),
     UN_AUTHERIZED(1007, "Bạn không có quyền truy cập.", HttpStatus.FORBIDDEN),
-    INVALIDATE_DOB(1008, "Thông tin ngày tháng năm sinh truyền vào không đủ {min}.", HttpStatus.BAD_REQUEST)
+    INVALIDATE_DOB(1008, "Thông tin ngày tháng năm sinh truyền vào không đủ {min}.", HttpStatus.BAD_REQUEST);
 
-    ;
     private int code;
     private String message;
     private HttpStatusCode statusCode;
 
-
-    ErrorCode() {
-    }
+    ErrorCode() {}
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

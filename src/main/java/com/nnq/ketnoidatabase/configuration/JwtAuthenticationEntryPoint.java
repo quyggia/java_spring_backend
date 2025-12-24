@@ -1,20 +1,23 @@
 package com.nnq.ketnoidatabase.configuration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nnq.ketnoidatabase.dto.response.ApiRespon;
-import com.nnq.ketnoidatabase.exception.ErrorCode;
+import java.io.IOException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nnq.ketnoidatabase.dto.response.ApiRespon;
+import com.nnq.ketnoidatabase.exception.ErrorCode;
 
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+    public void commence(
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
         ErrorCode errorCode = ErrorCode.UN_AUTHERIZED;
 
@@ -26,8 +29,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 .message(errorCode.getMessage())
                 .build();
 
-        ObjectMapper objectMapper = new ObjectMapper();// đối tượng dungf để map APi thành json
+        ObjectMapper objectMapper = new ObjectMapper(); // đối tượng dungf để map APi thành json
         response.getWriter().write(objectMapper.writeValueAsString(apiRespon));
-        response.flushBuffer();// ép đẩy dữ liệu xuống client ngay lật tức
+        response.flushBuffer(); // ép đẩy dữ liệu xuống client ngay lật tức
     }
 }

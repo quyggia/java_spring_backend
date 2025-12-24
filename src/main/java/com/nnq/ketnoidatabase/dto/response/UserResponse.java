@@ -1,12 +1,9 @@
 package com.nnq.ketnoidatabase.dto.response;
 
-
-import com.nnq.ketnoidatabase.entity.Role;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.util.Set;
 
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter

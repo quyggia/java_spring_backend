@@ -1,13 +1,12 @@
 package com.nnq.ketnoidatabase.dto.request;
 
-import com.nnq.ketnoidatabase.validator.DobConstrain;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 import java.util.List;
-import java.util.logging.Level;
 
+import com.nnq.ketnoidatabase.validator.DobConstrain;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
